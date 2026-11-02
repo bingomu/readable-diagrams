@@ -8,9 +8,25 @@ How this project is published, and what is left for each channel.
 | --- | --- | --- |
 | GitHub (source of truth) | repo `bingomu/readable-diagrams`, release `v1.1.0` | ✅ published |
 | DSH plugin marketplace | repo entry in `awesome-dsh-plugin` → `data/plugins/bingomu__readable-diagrams.yml` | ⏳ PR [#11412](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/11412) — repo must be 1 day old (2026-11-03) |
-| npm (optional, makes `dsh plugin add dsh-readable-diagrams` work) | `dsh-readable-diagrams@1.1.0` | ⏳ needs an npm token (`npm login` then `npm publish`) |
+| npm (optional) | `dsh-readable-diagrams@1.1.0` | ⏸ not needed for any other channel — see "Do we need npm?" below |
 | Claude Code plugin marketplace | `.claude-plugin/` | ✅ usable now via `/plugin marketplace add bingomu/readable-diagrams` |
 | Codex | `.codex-plugin/` + `skills/` | ✅ usable now by copying the skill folder |
+
+## Do we need npm?
+
+No. Every channel above installs from GitHub:
+
+- the DSH marketplace entry points at this repo and requires `dsh.bundle`
+  (which is here), so `dsh plugin add <repo or release tarball>` works;
+- Claude Code and Codex read the tree directly.
+
+npm would only add the shorter `dsh plugin add dsh-readable-diagrams`. If we
+decide to publish later:
+
+```bash
+npm login                      # or an Automation token
+npm_config_cache=/tmp/npmcache npm publish   # name is free, dry-run already passes
+```
 
 ## Publish a new version
 
