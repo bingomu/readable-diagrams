@@ -1,0 +1,78 @@
+{
+  "type": "timeline",
+  "meta": {
+    "title": "一次支付故障的 42 分钟经过了哪几个节点",
+    "eyebrow": "TIMELINE · 时间线",
+    "takeaway": "告警到止损用了 18 分钟，剩下 24 分钟都花在确认与回滚上。",
+    "caption": "按真实时间比例排布。橙色点是告警，蓝色点是恢复。",
+    "size": "fit",
+    "slug": "payment-incident",
+    "source": "事故复盘时间戳（示意）",
+    "steps": [
+      {
+        "title": "发布 v2.3",
+        "detail": "10:00，运维车道上的第一个点。"
+      },
+      {
+        "title": "错误率告警",
+        "detail": "10:12，距离发布 12 分钟。"
+      },
+      {
+        "title": "回滚开始",
+        "detail": "10:31，确认影响面之后。"
+      },
+      {
+        "title": "指标恢复",
+        "detail": "10:42，全程 42 分钟。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "ops",
+      "label": "运维"
+    },
+    {
+      "id": "biz",
+      "label": "业务"
+    }
+  ],
+  "events": [
+    {
+      "id": "deploy",
+      "time": "2026-10-01T10:00:00+08:00",
+      "label": "发布 v2.3",
+      "lane": "ops",
+      "kind": "change"
+    },
+    {
+      "id": "alert",
+      "time": "2026-10-01T10:12:00+08:00",
+      "label": "错误率告警",
+      "lane": "ops",
+      "kind": "alert",
+      "desc": "5xx 升到 4%"
+    },
+    {
+      "id": "ack",
+      "time": "2026-10-01T10:18:00+08:00",
+      "label": "确认影响面",
+      "lane": "biz",
+      "kind": "action"
+    },
+    {
+      "id": "rollback",
+      "time": "2026-10-01T10:31:00+08:00",
+      "label": "回滚开始",
+      "lane": "ops",
+      "kind": "action"
+    },
+    {
+      "id": "recover",
+      "time": "2026-10-01T10:42:00+08:00",
+      "label": "指标恢复",
+      "lane": "ops",
+      "kind": "recovery"
+    }
+  ]
+}

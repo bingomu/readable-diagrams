@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Readable Diagrams",
+    "description": "Editorial diagrams with a comprehension gate: conclusion title, takeaway, numbered reading path, legend and caption are checked before the page ships.",
+    "detail": "docs/DETAIL.md"
+  }
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>先做哪件事：把四个候选按影响和成本摆开</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f5f5; --paper-2:#ececec; --ink:#2d3142; --muted:#4f5d75;
+  --soft:#5a6580; --rule:rgba(45,49,66,0.12); --accent:#bf4520; --accent-tint:rgba(191,69,32,0.08);
+  --link:#2e5aa8; --doc-w:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.rd-doc{max-width:var(--doc-w,1080px);margin:0 auto;padding:64px 40px 80px}
+.rd-eyebrow{font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.rd-title{font-family:'Instrument Serif', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;font-weight:400;font-size:clamp(26px,3.4vw,42px);
+  line-height:1.16;letter-spacing:-.005em;margin:12px 0 0;max-width:20em;
+  text-wrap:balance}
+.rd-takeaway{margin:16px 0 0;max-width:66ch;font-size:17px;line-height:1.65;color:var(--muted)}
+.rd-takeaway strong{color:var(--ink);font-weight:600}
+.rd-figure{margin:36px 0 0}
+.rd-canvas{width:100%;overflow-x:auto;padding-bottom:4px}
+.rd-canvas svg{width:100%;min-width:720px;height:auto;display:block}
+.rd-caption{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--soft);max-width:70ch}
+.rd-steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:10px;
+  border-top:1px solid var(--rule);padding-top:20px}
+.rd-steps li{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.rd-steps .n{display:flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:600;margin-top:2px}
+.rd-steps .t{font-weight:600;font-size:14px}
+.rd-steps .d{display:block;color:var(--muted);font-size:13px;font-weight:400;margin-top:1px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:26px 0 0;
+  padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+.rd-legend li{display:inline-flex;align-items:center;gap:7px;list-style:none}
+.rd-legend ul{display:contents}
+.rd-swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+.rd-footer{margin:34px 0 0;padding-top:14px;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:8px 18px;font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;
+  color:var(--soft);letter-spacing:.04em}
+.rd-footer .dot{opacity:.5}
+@media print{
+  body{background:#fff}
+  .rd-doc{padding:24px 0}
+  .rd-canvas{overflow-x:visible}
+  .rd-canvas svg{min-width:0}
+}
+@media (max-width:640px){
+  .rd-doc{padding:40px 20px 56px}
+  .rd-title{font-size:26px}
+}
+
+.rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  transition:opacity .18s ease,stroke .18s ease,stroke-width .18s ease}
+.rd-canvas svg .rd-edge-label{stroke:none}
+.rd-canvas svg .rd-node{cursor:default;
+  animation:rd-rise .52s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(var(--i,0)*55ms)}
+.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  animation:rd-fade .6s ease backwards;animation-delay:.25s}
+@keyframes rd-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rd-fade{from{opacity:0}to{opacity:1}}
+.rd-canvas svg .rd-node:hover>.rd-shape{stroke:#bf4520;stroke-width:1.9}
+.rd-canvas svg:has(.rd-node:hover) .rd-node:not(:hover){opacity:.32}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge{opacity:.14}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge-label{opacity:.16}
+.rd-canvas svg:has(.rd-edge:hover) .rd-node{opacity:.55}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge:not(:hover){opacity:.28}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge-label:not(:hover){opacity:.3}
+.rd-canvas svg .rd-edge:hover{stroke-width:2.1}
+.rd-steps li{transition:background .15s ease;border-radius:6px}
+.rd-steps li:hover{background:var(--accent-tint)}
+.rd-steps .n{transition:transform .15s ease}
+.rd-steps li:hover .n{transform:scale(1.12)}
+@media (prefers-reduced-motion:reduce){
+  .rd-canvas svg *,.rd-steps *{animation:none!important;transition:none!important}}
+@media print{
+  .rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+    animation:none!important;opacity:1!important}}
+</style>
+</head>
+<body class="rd-light">
+<main class="rd-doc" data-rd-doc="1">
+  <div class="rd-eyebrow">QUADRANT · 象限</div>
+  <h1 class="rd-title">先做哪件事：把四个候选按影响和成本摆开</h1>
+  <p class="rd-takeaway">缓存预热影响大、成本低，应该先做；重写检索影响大但成本高，排在下个季度。</p>
+  <figure class="rd-figure">
+    <div class="rd-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 552" role="img" aria-labelledby="priority-quadrant-title priority-quadrant-desc" data-rd-type="quadrant"><title id="priority-quadrant-title">先做哪件事：把四个候选按影响和成本摆开</title><desc id="priority-quadrant-desc">缓存预热影响大、成本低，应该先做；重写检索影响大但成本高，排在下个季度。</desc><defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker></defs><rect width="720" height="552" fill="#f5f5f5"/><g transform="translate(111.8,41.7)"><rect x="60.0" y="0.0" width="440.0" height="440.0" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><line x1="280.0" y1="0.0" x2="280.0" y2="440.0" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="4,4"/><line x1="60.0" y1="220.0" x2="500.0" y2="220.0" stroke="rgba(45,49,66,0.22)" stroke-width="1" stroke-dasharray="4,4"/><text x="280.0" y="466.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.1em">实施成本 →</text><text x="20.0" y="224.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.1em">用户影响 →</text><text x="82.0" y="30.0" fill="rgba(90,101,128,0.9)" font-size="10" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="start" data-role="eyebrow" letter-spacing="0.12em">先做</text><text x="478.0" y="30.0" fill="rgba(90,101,128,0.9)" font-size="10" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="end" data-role="eyebrow" letter-spacing="0.12em">规划</text><text x="82.0" y="420.0" fill="rgba(90,101,128,0.9)" font-size="10" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="start" data-role="eyebrow" letter-spacing="0.12em">顺手做</text><text x="478.0" y="420.0" fill="rgba(90,101,128,0.9)" font-size="10" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="end" data-role="eyebrow" letter-spacing="0.12em">先不做</text><g class="rd-node" data-node-id="pt-0" style="--i:0"><circle cx="183.2" cy="96.8" r="5.5" fill="#bf4520" stroke="#f5f5f5" stroke-width="2"/><text x="195.2" y="100.8" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">缓存预热</text></g><g class="rd-node" data-node-id="pt-1" style="--i:1"><circle cx="403.2" cy="79.2" r="5.5" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><text x="415.2" y="83.2" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">重写检索</text></g><g class="rd-node" data-node-id="pt-2" style="--i:2"><circle cx="156.8" cy="299.2" r="5.5" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><text x="168.8" y="303.2" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">文案优化</text></g><g class="rd-node" data-node-id="pt-3" style="--i:3"><circle cx="332.8" cy="255.2" r="5.5" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><text x="344.8" y="259.2" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">换 CDN</text></g></g></svg></div>
+    <figcaption class="rd-caption">横轴是实施成本，纵轴是用户影响；橙色是建议先做的一项。</figcaption>
+  </figure>
+  <ol class="rd-steps" data-rd-steps="3"><li><span class="n">1</span><span><span class="t">左上：先做</span><span class="d">缓存预热影响大、成本低，橙色点。</span></span></li><li><span class="n">2</span><span><span class="t">右上：规划</span><span class="d">重写检索影响大但成本高。</span></span></li><li><span class="n">3</span><span><span class="t">下方两项</span><span class="d">文案优化和换 CDN 都不该抢在当前之前。</span></span></li></ol>
+  
+  <footer class="rd-footer"><span>QUADRANT</span><span class="dot">·</span><span>fit</span><span class="dot">·</span><span>mixed</span><span class="dot">·</span><span>团队评估（示意）</span></footer>
+</main>
+</body>
+</html>

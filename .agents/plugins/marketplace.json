@@ -1,0 +1,20 @@
+{
+  "name": "readable-diagrams",
+  "interface": {
+    "displayName": "Readable Diagrams"
+  },
+  "plugins": [
+    {
+      "name": "readable-diagrams",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Creativity"
+    }
+  ]
+}

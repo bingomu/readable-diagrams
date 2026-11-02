@@ -1,0 +1,46 @@
+{
+  "type": "bar",
+  "meta": {
+    "title": "发布后只有 P99 变了，其余分位数几乎没动",
+    "eyebrow": "BAR · 对比",
+    "takeaway": "均值只涨 8ms，P99 却从 80ms 涨到 600ms：这是尾部问题，不是整体变慢。",
+    "caption": "单位毫秒，发布前后同一流量窗口。",
+    "size": "fit",
+    "slug": "latency-before-after",
+    "unit": "ms",
+    "source": "压测数据（示意）",
+    "steps": [
+      {
+        "title": "先看最长的一根",
+        "detail": "发布后 P99 到 600ms，是唯一明显变化的量。"
+      },
+      {
+        "title": "再对比同组",
+        "detail": "P50 只从 75 到 76ms，说明整体没变慢。"
+      },
+      {
+        "title": "结论",
+        "detail": "这是尾部问题，排查方向是慢请求而不是扩容。"
+      }
+    ]
+  },
+  "data": [
+    {
+      "label": "发布前 P50",
+      "value": 75
+    },
+    {
+      "label": "发布后 P50",
+      "value": 76
+    },
+    {
+      "label": "发布前 P99",
+      "value": 80
+    },
+    {
+      "label": "发布后 P99",
+      "value": 600,
+      "focus": true
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "readable-diagrams",
+  "description": "Editorial diagrams a reader understands on first look: architecture, flow, sequence, timeline, tree, layer stack, bar and quadrant from one JSON spec, plus hover interaction, light/dark skins, CJK-aware typography, and a machine-checked comprehension gate.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Genzo",
+    "url": "https://github.com/bingomu"
+  },
+  "homepage": "https://github.com/bingomu/readable-diagrams",
+  "repository": "https://github.com/bingomu/readable-diagrams",
+  "license": "MIT",
+  "keywords": [
+    "diagrams",
+    "skills",
+    "architecture",
+    "flowchart",
+    "sequence",
+    "timeline",
+    "svg",
+    "editorial",
+    "readability",
+    "comprehension"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Readable Diagrams",
+    "shortDescription": "Diagrams a reader understands on first look",
+    "longDescription": "readable-diagrams turns a system, process or comparison into one self-contained HTML page with an editorial diagram — and then checks that a reader can actually follow it. The page always carries a conclusion-shaped title, a one-line takeaway, a numbered reading path, a legend when it is needed, and a caption that says how to read it. A second gate checks contrast, type floors and connector geometry.\n\nNine structural types render from one JSON spec: architecture, flow, state, sequence, timeline, tree, layer stack, bar and quadrant. Chart families (line, scatter, sankey, radar, heatmap, Gantt…) are hand-authored against the same page furniture and the same gates. Mermaid, draw.io and Excalidraw imports are redrawn editorially instead of re-rendered. Light and dark skins, CJK-aware typography, hover interaction with no JavaScript, and SVG/PNG export.",
+    "developerName": "Genzo",
+    "category": "Creativity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/bingomu/readable-diagrams",
+    "privacyPolicyURL": "https://github.com/bingomu/readable-diagrams/blob/main/SECURITY.md",
+    "defaultPrompt": [
+      "Draw an architecture diagram of my project.",
+      "Turn this Mermaid flowchart into an editorial diagram.",
+      "Make a one-page explainer with a diagram."
+    ]
+  }
+}

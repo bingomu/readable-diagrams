@@ -1,0 +1,34 @@
+{
+  "type": "architecture",
+  "meta": {
+    "title": "一次下单请求如何穿过网关到达数据库",
+    "eyebrow": "ARCHITECTURE · 架构",
+    "takeaway": "写路径只有一条，橙色主线之外的风控与通知都是旁路，不阻塞下单。",
+    "caption": "从客户端到数据库共四跳。实线是同步调用，虚线是异步支路；阅读顺序见下方编号。",
+    "audience": "mixed",
+    "size": "fit",
+    "theme": "light",
+    "slug": "checkout-architecture",
+    "reading_path": ["client", "gateway", "orders", "pg"],
+    "source": "示意结构，非实测数据"
+  },
+  "zones": [
+    {"id": "edge", "label": "EDGE"},
+    {"id": "core", "label": "CORE"}
+  ],
+  "nodes": [
+    {"id": "client", "label": "客户端", "sublabel": "web · app", "kind": "input", "zone": "edge"},
+    {"id": "gateway", "label": "API 网关", "sublabel": ":443 · TLS", "kind": "backend", "zone": "edge"},
+    {"id": "orders", "label": "订单服务", "sublabel": "order.v2", "kind": "focal", "zone": "core"},
+    {"id": "risk", "label": "风控", "sublabel": "async", "kind": "optional", "zone": "core"},
+    {"id": "pg", "label": "订单库", "sublabel": "PostgreSQL", "kind": "store", "zone": "core"},
+    {"id": "notify", "label": "通知服务", "sublabel": "queue", "kind": "optional"}
+  ],
+  "edges": [
+    {"from": "client", "to": "gateway", "label": "HTTPS", "variant": "accent"},
+    {"from": "gateway", "to": "orders", "label": "POST /orders", "variant": "accent"},
+    {"from": "orders", "to": "pg", "label": "写入", "variant": "accent"},
+    {"from": "orders", "to": "risk", "label": "评分请求", "variant": "dashed"},
+    {"from": "orders", "to": "notify", "label": "下单事件", "variant": "dashed"}
+  ]
+}

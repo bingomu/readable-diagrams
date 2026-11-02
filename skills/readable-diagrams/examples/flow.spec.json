@@ -1,0 +1,78 @@
+{
+  "type": "flow",
+  "meta": {
+    "title": "线上 P99 变慢时按什么顺序排查",
+    "eyebrow": "FLOW · 流程",
+    "takeaway": "先分清是全链路慢还是单跳慢，再决定看依赖还是看自身；两个判断就有三条出路。",
+    "caption": "六边形是判断，实线是下一步，橙色是你最可能走的那条路。",
+    "size": "fit",
+    "slug": "p99-triage",
+    "reading_path": [
+      "alert",
+      "split",
+      "trace",
+      "fix"
+    ],
+    "source": "runbook 摘要"
+  },
+  "nodes": [
+    {
+      "id": "alert",
+      "label": "P99 告警",
+      "kind": "input"
+    },
+    {
+      "id": "split",
+      "label": "平均耗时也涨了？",
+      "kind": "decision"
+    },
+    {
+      "id": "deps",
+      "label": "查依赖",
+      "kind": "backend"
+    },
+    {
+      "id": "trace",
+      "label": "抓慢请求 trace",
+      "kind": "focal"
+    },
+    {
+      "id": "fix",
+      "label": "修复并验证",
+      "kind": "backend"
+    },
+    {
+      "id": "scale",
+      "label": "扩容",
+      "kind": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "alert",
+      "to": "split"
+    },
+    {
+      "from": "split",
+      "to": "deps",
+      "label": "全链路"
+    },
+    {
+      "from": "split",
+      "to": "trace",
+      "label": "仅尾部",
+      "variant": "accent"
+    },
+    {
+      "from": "deps",
+      "to": "scale",
+      "label": "依赖过载"
+    },
+    {
+      "from": "trace",
+      "to": "fix",
+      "label": "单跳",
+      "variant": "accent"
+    }
+  ]
+}

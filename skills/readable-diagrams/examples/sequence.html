@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一次缓存未命中的请求要经过哪些服务</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f5f5; --paper-2:#ececec; --ink:#2d3142; --muted:#4f5d75;
+  --soft:#5a6580; --rule:rgba(45,49,66,0.12); --accent:#bf4520; --accent-tint:rgba(191,69,32,0.08);
+  --link:#2e5aa8; --doc-w:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.rd-doc{max-width:var(--doc-w,1080px);margin:0 auto;padding:64px 40px 80px}
+.rd-eyebrow{font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.rd-title{font-family:'Instrument Serif', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;font-weight:400;font-size:clamp(26px,3.4vw,42px);
+  line-height:1.16;letter-spacing:-.005em;margin:12px 0 0;max-width:20em;
+  text-wrap:balance}
+.rd-takeaway{margin:16px 0 0;max-width:66ch;font-size:17px;line-height:1.65;color:var(--muted)}
+.rd-takeaway strong{color:var(--ink);font-weight:600}
+.rd-figure{margin:36px 0 0}
+.rd-canvas{width:100%;overflow-x:auto;padding-bottom:4px}
+.rd-canvas svg{width:100%;min-width:720px;height:auto;display:block}
+.rd-caption{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--soft);max-width:70ch}
+.rd-steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:10px;
+  border-top:1px solid var(--rule);padding-top:20px}
+.rd-steps li{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.rd-steps .n{display:flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:600;margin-top:2px}
+.rd-steps .t{font-weight:600;font-size:14px}
+.rd-steps .d{display:block;color:var(--muted);font-size:13px;font-weight:400;margin-top:1px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:26px 0 0;
+  padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+.rd-legend li{display:inline-flex;align-items:center;gap:7px;list-style:none}
+.rd-legend ul{display:contents}
+.rd-swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+.rd-footer{margin:34px 0 0;padding-top:14px;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:8px 18px;font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;
+  color:var(--soft);letter-spacing:.04em}
+.rd-footer .dot{opacity:.5}
+@media print{
+  body{background:#fff}
+  .rd-doc{padding:24px 0}
+  .rd-canvas{overflow-x:visible}
+  .rd-canvas svg{min-width:0}
+}
+@media (max-width:640px){
+  .rd-doc{padding:40px 20px 56px}
+  .rd-title{font-size:26px}
+}
+
+.rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  transition:opacity .18s ease,stroke .18s ease,stroke-width .18s ease}
+.rd-canvas svg .rd-edge-label{stroke:none}
+.rd-canvas svg .rd-node{cursor:default;
+  animation:rd-rise .52s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(var(--i,0)*55ms)}
+.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  animation:rd-fade .6s ease backwards;animation-delay:.25s}
+@keyframes rd-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rd-fade{from{opacity:0}to{opacity:1}}
+.rd-canvas svg .rd-node:hover>.rd-shape{stroke:#bf4520;stroke-width:1.9}
+.rd-canvas svg:has(.rd-node:hover) .rd-node:not(:hover){opacity:.32}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge{opacity:.14}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge-label{opacity:.16}
+.rd-canvas svg:has(.rd-edge:hover) .rd-node{opacity:.55}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge:not(:hover){opacity:.28}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge-label:not(:hover){opacity:.3}
+.rd-canvas svg .rd-edge:hover{stroke-width:2.1}
+.rd-steps li{transition:background .15s ease;border-radius:6px}
+.rd-steps li:hover{background:var(--accent-tint)}
+.rd-steps .n{transition:transform .15s ease}
+.rd-steps li:hover .n{transform:scale(1.12)}
+@media (prefers-reduced-motion:reduce){
+  .rd-canvas svg *,.rd-steps *{animation:none!important;transition:none!important}}
+@media print{
+  .rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+    animation:none!important;opacity:1!important}}
+
+.rd-canvas svg:has([data-node-id="browser"]:hover) .rd-edge[data-edge-from="browser"],
+.rd-canvas svg:has([data-node-id="browser"]:hover) .rd-edge[data-edge-to="browser"]{
+  opacity:1!important;stroke:#bf4520!important;stroke-width:1.8!important}
+.rd-canvas svg:has([data-node-id="browser"]:hover) .rd-edge-label[data-edge-from="browser"],
+.rd-canvas svg:has([data-node-id="browser"]:hover) .rd-edge-label[data-edge-to="browser"]{
+  opacity:1!important}
+
+.rd-canvas svg:has([data-node-id="api"]:hover) .rd-edge[data-edge-from="api"],
+.rd-canvas svg:has([data-node-id="api"]:hover) .rd-edge[data-edge-to="api"]{
+  opacity:1!important;stroke:#bf4520!important;stroke-width:1.8!important}
+.rd-canvas svg:has([data-node-id="api"]:hover) .rd-edge-label[data-edge-from="api"],
+.rd-canvas svg:has([data-node-id="api"]:hover) .rd-edge-label[data-edge-to="api"]{
+  opacity:1!important}
+
+.rd-canvas svg:has([data-node-id="redis"]:hover) .rd-edge[data-edge-from="redis"],
+.rd-canvas svg:has([data-node-id="redis"]:hover) .rd-edge[data-edge-to="redis"]{
+  opacity:1!important;stroke:#bf4520!important;stroke-width:1.8!important}
+.rd-canvas svg:has([data-node-id="redis"]:hover) .rd-edge-label[data-edge-from="redis"],
+.rd-canvas svg:has([data-node-id="redis"]:hover) .rd-edge-label[data-edge-to="redis"]{
+  opacity:1!important}
+
+.rd-canvas svg:has([data-node-id="db"]:hover) .rd-edge[data-edge-from="db"],
+.rd-canvas svg:has([data-node-id="db"]:hover) .rd-edge[data-edge-to="db"]{
+  opacity:1!important;stroke:#bf4520!important;stroke-width:1.8!important}
+.rd-canvas svg:has([data-node-id="db"]:hover) .rd-edge-label[data-edge-from="db"],
+.rd-canvas svg:has([data-node-id="db"]:hover) .rd-edge-label[data-edge-to="db"]{
+  opacity:1!important}
+</style>
+</head>
+<body class="rd-light">
+<main class="rd-doc" data-rd-doc="1">
+  <div class="rd-eyebrow">SEQUENCE · 时序</div>
+  <h1 class="rd-title">一次缓存未命中的请求要经过哪些服务</h1>
+  <p class="rd-takeaway">未命中时只有一次回源，写入缓存发生在返回之后，不挡住响应。</p>
+  <figure class="rd-figure">
+    <div class="rd-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 484" role="img" aria-labelledby="cache-miss-sequence-title cache-miss-sequence-desc" data-rd-type="sequence"><title id="cache-miss-sequence-title">一次缓存未命中的请求要经过哪些服务</title><desc id="cache-miss-sequence-desc">未命中时只有一次回源，写入缓存发生在返回之后，不挡住响应。</desc><defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker></defs><rect width="720" height="484" fill="#f5f5f5"/><g transform="translate(52.0,51.0)"><rect class="rd-mask" x="0.0" y="0.0" width="112.0" height="48.0" rx="6" fill="#f5f5f5"/><g class="rd-node" data-rd-node="1" data-rd-kind="input" data-node-id="browser" style="--i:0"><title>浏览器</title><rect class="rd-shape" x="0.0" y="0.0" width="112.0" height="48.0" rx="6" fill="rgba(79,93,117,0.1)" stroke="#5a6580" stroke-width="1"/><text x="56.0" y="27.3" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">浏览器</text></g><line x1="56.0" y1="48.0" x2="56.0" y2="392.0" stroke="rgba(45,49,66,0.18)" stroke-width="1"/><rect class="rd-mask" x="168.0" y="0.0" width="112.0" height="48.0" rx="6" fill="#f5f5f5"/><g class="rd-node" data-rd-node="1" data-rd-kind="focal" data-node-id="api" style="--i:1"><title>订单 API</title><rect class="rd-shape" x="168.0" y="0.0" width="112.0" height="48.0" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/><text x="224.0" y="27.3" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">订单 API</text></g><line x1="224.0" y1="48.0" x2="224.0" y2="392.0" stroke="rgba(45,49,66,0.18)" stroke-width="1"/><rect class="rd-mask" x="336.0" y="0.0" width="112.0" height="48.0" rx="6" fill="#f5f5f5"/><g class="rd-node" data-rd-node="1" data-rd-kind="store" data-node-id="redis" style="--i:2"><title>Redis</title><rect class="rd-shape" x="336.0" y="0.0" width="112.0" height="48.0" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/><text x="392.0" y="27.3" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">Redis</text></g><line x1="392.0" y1="48.0" x2="392.0" y2="392.0" stroke="rgba(45,49,66,0.18)" stroke-width="1"/><rect class="rd-mask" x="504.0" y="0.0" width="112.0" height="48.0" rx="6" fill="#f5f5f5"/><g class="rd-node" data-rd-node="1" data-rd-kind="store" data-node-id="db" style="--i:3"><title>订单库</title><rect class="rd-shape" x="504.0" y="0.0" width="112.0" height="48.0" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/><text x="560.0" y="27.3" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">订单库</text></g><line x1="560.0" y1="48.0" x2="560.0" y2="392.0" stroke="rgba(45,49,66,0.18)" stroke-width="1"/><line x1="0.0" y1="68.0" x2="0.0" y2="68.0" stroke="rgba(45,49,66,0.18)" stroke-width="1"/><line x1="56.0" y1="84.0" x2="224.0" y2="84.0" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)" class="rd-edge" data-rd-edge="1" data-edge-from="browser" data-edge-to="api"/><g class="rd-edge-label" data-edge-from="browser" data-edge-to="api"><rect x="96.9" y="63.0" width="86.1" height="14.0" rx="2" fill="#f5f5f5"/><text x="140.0" y="75.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">GET /orders/42</text></g><line x1="224.0" y1="128.0" x2="392.0" y2="128.0" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)" class="rd-edge" data-rd-edge="1" data-edge-from="api" data-edge-to="redis"/><g class="rd-edge-label" data-edge-from="api" data-edge-to="redis"><rect x="270.5" y="107.0" width="75.0" height="14.0" rx="2" fill="#f5f5f5"/><text x="308.0" y="119.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">GET order:42</text></g><line x1="392.0" y1="172.0" x2="224.0" y2="172.0" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)" class="rd-edge" data-rd-edge="1" data-edge-from="redis" data-edge-to="api"/><g class="rd-edge-label" data-edge-from="redis" data-edge-to="api"><rect x="295.6" y="151.0" width="24.7" height="14.0" rx="2" fill="#f5f5f5"/><text x="308.0" y="163.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">nil</text></g><line x1="224.0" y1="216.0" x2="560.0" y2="216.0" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)" class="rd-edge" data-rd-edge="1" data-edge-from="api" data-edge-to="db"/><g class="rd-edge-label" data-edge-from="api" data-edge-to="db"><rect x="371.3" y="195.0" width="41.5" height="14.0" rx="2" fill="#f5f5f5"/><text x="392.0" y="207.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">SELECT</text></g><line x1="560.0" y1="260.0" x2="224.0" y2="260.0" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)" class="rd-edge" data-rd-edge="1" data-edge-from="db" data-edge-to="api"/><g class="rd-edge-label" data-edge-from="db" data-edge-to="api"><rect x="379.6" y="239.0" width="24.7" height="14.0" rx="2" fill="#f5f5f5"/><text x="392.0" y="251.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">row</text></g><line x1="224.0" y1="304.0" x2="56.0" y2="304.0" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)" class="rd-edge" data-rd-edge="1" data-edge-from="api" data-edge-to="browser"/><g class="rd-edge-label" data-edge-from="api" data-edge-to="browser"><rect x="119.3" y="283.0" width="41.5" height="14.0" rx="2" fill="#f5f5f5"/><text x="140.0" y="295.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">200 OK</text></g><line x1="224.0" y1="348.0" x2="392.0" y2="348.0" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)" class="rd-edge" data-rd-edge="1" data-edge-from="api" data-edge-to="redis"/><g class="rd-edge-label" data-edge-from="api" data-edge-to="redis"><rect x="290.1" y="327.0" width="35.9" height="14.0" rx="2" fill="#f5f5f5"/><text x="308.0" y="339.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="arrow" letter-spacing="0.04em">SETEX</text></g></g></svg></div>
+    <figcaption class="rd-caption">纵向是时间：从上往下读。虚线是返回消息，橙色是用户真正等待的关键一跳。</figcaption>
+  </figure>
+  <ol class="rd-steps" data-rd-steps="4"><li><span class="n">1</span><span><span class="t">浏览器发起请求</span><span class="d">GET /orders/42 打到订单 API。</span></span></li><li><span class="n">2</span><span><span class="t">API 查缓存</span><span class="d">Redis 没有这条记录，返回 nil。</span></span></li><li><span class="n">3</span><span><span class="t">回源数据库</span><span class="d">唯一的慢一跳，约 80ms。</span></span></li><li><span class="n">4</span><span><span class="t">异步写回缓存</span><span class="d">响应先返回，写缓存不阻塞用户。</span></span></li></ol>
+  <ul class="rd-legend" data-rd-legend="1"><li><span class="rd-swatch" style="background:rgba(45,49,66,0.25)"></span>用户 / 入口</li><li><span class="rd-swatch" style="background:#bf4520"></span>焦点节点</li><li><span class="rd-swatch" style="background:rgba(45,49,66,0.55)"></span>存储 / 状态</li><li><span class="rd-swatch" style="background:#bf4520"></span>主路径</li><li><span class="rd-swatch" style="background:#4f5d75"></span>返回</li><li><span class="rd-swatch" style="background:#4f5d75"></span>异步 / 返回</li></ul>
+  <footer class="rd-footer"><span>SEQUENCE</span><span class="dot">·</span><span>fit</span><span class="dot">·</span><span>mixed</span><span class="dot">·</span><span>示意调用链</span></footer>
+</main>
+</body>
+</html>

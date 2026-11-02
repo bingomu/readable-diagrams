@@ -1,0 +1,15 @@
+{
+  "name": "readable-diagrams",
+  "metadata": {
+    "description": "Editorial diagrams with a machine-checked comprehension gate — nine structural types from one JSON spec, plus hand-authored chart families, Mermaid/draw.io import, SVG/PNG export and a no-JS hover layer."
+  },
+  "owner": {
+    "name": "Genzo"
+  },
+  "plugins": [
+    {
+      "name": "readable-diagrams",
+      "source": "./"
+    }
+  ]
+}

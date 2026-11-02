@@ -1,0 +1,23 @@
+{
+  "type": "tree",
+  "meta": {
+    "title": "知识库 MVP 的能力拆成哪几块",
+    "eyebrow": "TREE · 树",
+    "takeaway": "第一版只有三条主干：导入、检索、回顾；AI 摘要留给 v2。",
+    "caption": "从上往下是包含关系：父节点是能力，子节点是它的组成。",
+    "size": "fit",
+    "slug": "kb-tree",
+    "reading_path": ["root", "ingest", "search", "review"],
+    "source": "项目范围约定"
+  },
+  "nodes": [
+    {"id": "root", "label": "知识库 MVP", "kind": "focal", "parent": null},
+    {"id": "ingest", "label": "导入", "parent": "root"},
+    {"id": "search", "label": "检索", "parent": "root"},
+    {"id": "review", "label": "每日回顾", "parent": "root"},
+    {"id": "md", "label": "Markdown", "parent": "ingest"},
+    {"id": "clip", "label": "网页剪藏", "parent": "ingest"},
+    {"id": "fts", "label": "全文索引", "parent": "search"},
+    {"id": "tag", "label": "标签", "parent": "search"}
+  ]
+}

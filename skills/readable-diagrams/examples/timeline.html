@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一次支付故障的 42 分钟经过了哪几个节点</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f5f5; --paper-2:#ececec; --ink:#2d3142; --muted:#4f5d75;
+  --soft:#5a6580; --rule:rgba(45,49,66,0.12); --accent:#bf4520; --accent-tint:rgba(191,69,32,0.08);
+  --link:#2e5aa8; --doc-w:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.rd-doc{max-width:var(--doc-w,1080px);margin:0 auto;padding:64px 40px 80px}
+.rd-eyebrow{font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.rd-title{font-family:'Instrument Serif', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;font-weight:400;font-size:clamp(26px,3.4vw,42px);
+  line-height:1.16;letter-spacing:-.005em;margin:12px 0 0;max-width:20em;
+  text-wrap:balance}
+.rd-takeaway{margin:16px 0 0;max-width:66ch;font-size:17px;line-height:1.65;color:var(--muted)}
+.rd-takeaway strong{color:var(--ink);font-weight:600}
+.rd-figure{margin:36px 0 0}
+.rd-canvas{width:100%;overflow-x:auto;padding-bottom:4px}
+.rd-canvas svg{width:100%;min-width:800px;height:auto;display:block}
+.rd-caption{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--soft);max-width:70ch}
+.rd-steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:10px;
+  border-top:1px solid var(--rule);padding-top:20px}
+.rd-steps li{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.rd-steps .n{display:flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:600;margin-top:2px}
+.rd-steps .t{font-weight:600;font-size:14px}
+.rd-steps .d{display:block;color:var(--muted);font-size:13px;font-weight:400;margin-top:1px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:26px 0 0;
+  padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+.rd-legend li{display:inline-flex;align-items:center;gap:7px;list-style:none}
+.rd-legend ul{display:contents}
+.rd-swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+.rd-footer{margin:34px 0 0;padding-top:14px;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:8px 18px;font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;
+  color:var(--soft);letter-spacing:.04em}
+.rd-footer .dot{opacity:.5}
+@media print{
+  body{background:#fff}
+  .rd-doc{padding:24px 0}
+  .rd-canvas{overflow-x:visible}
+  .rd-canvas svg{min-width:0}
+}
+@media (max-width:640px){
+  .rd-doc{padding:40px 20px 56px}
+  .rd-title{font-size:26px}
+}
+
+.rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  transition:opacity .18s ease,stroke .18s ease,stroke-width .18s ease}
+.rd-canvas svg .rd-edge-label{stroke:none}
+.rd-canvas svg .rd-node{cursor:default;
+  animation:rd-rise .52s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(var(--i,0)*55ms)}
+.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  animation:rd-fade .6s ease backwards;animation-delay:.25s}
+@keyframes rd-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rd-fade{from{opacity:0}to{opacity:1}}
+.rd-canvas svg .rd-node:hover>.rd-shape{stroke:#bf4520;stroke-width:1.9}
+.rd-canvas svg:has(.rd-node:hover) .rd-node:not(:hover){opacity:.32}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge{opacity:.14}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge-label{opacity:.16}
+.rd-canvas svg:has(.rd-edge:hover) .rd-node{opacity:.55}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge:not(:hover){opacity:.28}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge-label:not(:hover){opacity:.3}
+.rd-canvas svg .rd-edge:hover{stroke-width:2.1}
+.rd-steps li{transition:background .15s ease;border-radius:6px}
+.rd-steps li:hover{background:var(--accent-tint)}
+.rd-steps .n{transition:transform .15s ease}
+.rd-steps li:hover .n{transform:scale(1.12)}
+@media (prefers-reduced-motion:reduce){
+  .rd-canvas svg *,.rd-steps *{animation:none!important;transition:none!important}}
+@media print{
+  .rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+    animation:none!important;opacity:1!important}}
+</style>
+</head>
+<body class="rd-light">
+<main class="rd-doc" data-rd-doc="1">
+  <div class="rd-eyebrow">TIMELINE · 时间线</div>
+  <h1 class="rd-title">一次支付故障的 42 分钟经过了哪几个节点</h1>
+  <p class="rd-takeaway">告警到止损用了 18 分钟，剩下 24 分钟都花在确认与回滚上。</p>
+  <figure class="rd-figure">
+    <div class="rd-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" role="img" aria-labelledby="payment-incident-title payment-incident-desc" data-rd-type="timeline"><title id="payment-incident-title">一次支付故障的 42 分钟经过了哪几个节点</title><desc id="payment-incident-desc">告警到止损用了 18 分钟，剩下 24 分钟都花在确认与回滚上。</desc><defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker></defs><rect width="800" height="240" fill="#f5f5f5"/><g transform="translate(40.0,17.0)"><line x1="120.0" y1="34.0" x2="120.0" y2="34.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/><text x="0.0" y="64.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="start" data-role="eyebrow" letter-spacing="0.12em">运维</text><line x1="120.0" y1="60.0" x2="720.0" y2="60.0" stroke="rgba(45,49,66,0.16)" stroke-width="0.8" marker-end="url(#arrow)"/><text x="0.0" y="150.0" fill="#5a6580" font-size="9" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="start" data-role="eyebrow" letter-spacing="0.12em">业务</text><line x1="120.0" y1="146.0" x2="720.0" y2="146.0" stroke="rgba(45,49,66,0.16)" stroke-width="0.8" marker-end="url(#arrow)"/><circle cx="160.0" cy="60.0" r="5.0" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><line x1="160.0" y1="55.0" x2="160.0" y2="40.0" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/><text x="160.0" y="34.0" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">发布 v2.3</text><text x="160.0" y="74.0" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.04em">10-01 10:00</text><circle cx="308.6" cy="60.0" r="5.0" fill="#bf4520" stroke="#f5f5f5" stroke-width="2"/><line x1="308.6" y1="55.0" x2="308.6" y2="40.0" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/><text x="308.6" y="34.0" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">错误率告警</text><text x="308.6" y="48.0" fill="#5a6580" font-size="9" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="sublabel">5xx 升到 4%</text><text x="308.6" y="74.0" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.04em">10-01 10:12</text><circle cx="382.9" cy="146.0" r="5.0" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><line x1="382.9" y1="141.0" x2="382.9" y2="126.0" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/><text x="382.9" y="178.0" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">确认影响面</text><text x="382.9" y="160.0" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.04em">10-01 10:18</text><circle cx="543.8" cy="60.0" r="5.0" fill="#2d3142" stroke="#f5f5f5" stroke-width="2"/><line x1="543.8" y1="55.0" x2="543.8" y2="40.0" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/><text x="543.8" y="34.0" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">回滚开始</text><text x="543.8" y="74.0" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.04em">10-01 10:31</text><circle cx="680.0" cy="60.0" r="5.0" fill="#2e5aa8" stroke="#f5f5f5" stroke-width="2"/><line x1="680.0" y1="55.0" x2="680.0" y2="40.0" stroke="rgba(45,49,66,0.25)" stroke-width="0.8"/><text x="680.0" y="34.0" fill="#2d3142" font-size="11" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="middle" data-role="name" font-weight="600">指标恢复</text><text x="680.0" y="74.0" fill="#5a6580" font-size="8" font-family="'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace" text-anchor="middle" data-role="eyebrow" letter-spacing="0.04em">10-01 10:42</text></g></svg></div>
+    <figcaption class="rd-caption">按真实时间比例排布。橙色点是告警，蓝色点是恢复。</figcaption>
+  </figure>
+  <ol class="rd-steps" data-rd-steps="4"><li><span class="n">1</span><span><span class="t">发布 v2.3</span><span class="d">10:00，运维车道上的第一个点。</span></span></li><li><span class="n">2</span><span><span class="t">错误率告警</span><span class="d">10:12，距离发布 12 分钟。</span></span></li><li><span class="n">3</span><span><span class="t">回滚开始</span><span class="d">10:31，确认影响面之后。</span></span></li><li><span class="n">4</span><span><span class="t">指标恢复</span><span class="d">10:42，全程 42 分钟。</span></span></li></ol>
+  
+  <footer class="rd-footer"><span>TIMELINE</span><span class="dot">·</span><span>fit</span><span class="dot">·</span><span>mixed</span><span class="dot">·</span><span>事故复盘时间戳（示意）</span></footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "readable-diagrams",
+  "description": "Editorial diagrams a reader understands on first look: architecture, flow, sequence, timeline, tree, layer stack, bar and quadrant from one JSON spec, plus hover interaction, light/dark skins, CJK-aware typography, and a machine-checked comprehension gate.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Genzo",
+    "url": "https://github.com/bingomu"
+  },
+  "homepage": "https://github.com/bingomu/readable-diagrams",
+  "repository": "https://github.com/bingomu/readable-diagrams",
+  "license": "MIT",
+  "keywords": [
+    "diagrams",
+    "skills",
+    "architecture",
+    "flowchart",
+    "sequence",
+    "timeline",
+    "svg",
+    "editorial",
+    "readability",
+    "comprehension"
+  ]
+}

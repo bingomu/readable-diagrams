@@ -1,0 +1,33 @@
+{
+  "type": "sequence",
+  "meta": {
+    "title": "一次缓存未命中的请求要经过哪些服务",
+    "eyebrow": "SEQUENCE · 时序",
+    "takeaway": "未命中时只有一次回源，写入缓存发生在返回之后，不挡住响应。",
+    "caption": "纵向是时间：从上往下读。虚线是返回消息，橙色是用户真正等待的关键一跳。",
+    "size": "fit",
+    "slug": "cache-miss-sequence",
+    "steps": [
+      {"title": "浏览器发起请求", "detail": "GET /orders/42 打到订单 API。"},
+      {"title": "API 查缓存", "detail": "Redis 没有这条记录，返回 nil。"},
+      {"title": "回源数据库", "detail": "唯一的慢一跳，约 80ms。"},
+      {"title": "异步写回缓存", "detail": "响应先返回，写缓存不阻塞用户。"}
+    ],
+    "source": "示意调用链"
+  },
+  "actors": [
+    {"id": "browser", "label": "浏览器", "kind": "input"},
+    {"id": "api", "label": "订单 API", "kind": "focal"},
+    {"id": "redis", "label": "Redis", "kind": "store"},
+    {"id": "db", "label": "订单库", "kind": "store"}
+  ],
+  "messages": [
+    {"from": "browser", "to": "api", "label": "GET /orders/42", "variant": "accent"},
+    {"from": "api", "to": "redis", "label": "GET order:42"},
+    {"from": "redis", "to": "api", "label": "nil", "variant": "return"},
+    {"from": "api", "to": "db", "label": "SELECT", "variant": "accent"},
+    {"from": "db", "to": "api", "label": "row", "variant": "return"},
+    {"from": "api", "to": "browser", "label": "200 OK", "variant": "return"},
+    {"from": "api", "to": "redis", "label": "SETEX", "variant": "dashed"}
+  ]
+}

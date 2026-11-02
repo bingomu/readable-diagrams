@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>这个插件的四层结构，哪一层最该先改</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Noto+Serif+SC:wght@400&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f5f5; --paper-2:#ececec; --ink:#2d3142; --muted:#4f5d75;
+  --soft:#5a6580; --rule:rgba(45,49,66,0.12); --accent:#bf4520; --accent-tint:rgba(191,69,32,0.08);
+  --link:#2e5aa8; --doc-w:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.rd-doc{max-width:var(--doc-w,1080px);margin:0 auto;padding:64px 40px 80px}
+.rd-eyebrow{font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted)}
+.rd-title{font-family:'Instrument Serif', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;font-weight:400;font-size:clamp(26px,3.4vw,42px);
+  line-height:1.16;letter-spacing:-.005em;margin:12px 0 0;max-width:20em;
+  text-wrap:balance}
+.rd-takeaway{margin:16px 0 0;max-width:66ch;font-size:17px;line-height:1.65;color:var(--muted)}
+.rd-takeaway strong{color:var(--ink);font-weight:600}
+.rd-figure{margin:36px 0 0}
+.rd-canvas{width:100%;overflow-x:auto;padding-bottom:4px}
+.rd-canvas svg{width:100%;min-width:720px;height:auto;display:block}
+.rd-caption{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--soft);max-width:70ch}
+.rd-steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:10px;
+  border-top:1px solid var(--rule);padding-top:20px}
+.rd-steps li{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.rd-steps .n{display:flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:600;margin-top:2px}
+.rd-steps .t{font-weight:600;font-size:14px}
+.rd-steps .d{display:block;color:var(--muted);font-size:13px;font-weight:400;margin-top:1px}
+.rd-legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin:26px 0 0;
+  padding-top:16px;border-top:1px solid var(--rule);font-size:12px;color:var(--muted)}
+.rd-legend li{display:inline-flex;align-items:center;gap:7px;list-style:none}
+.rd-legend ul{display:contents}
+.rd-swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+.rd-footer{margin:34px 0 0;padding-top:14px;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:8px 18px;font-family:'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, 'PingFang SC', monospace;font-size:11px;
+  color:var(--soft);letter-spacing:.04em}
+.rd-footer .dot{opacity:.5}
+@media print{
+  body{background:#fff}
+  .rd-doc{padding:24px 0}
+  .rd-canvas{overflow-x:visible}
+  .rd-canvas svg{min-width:0}
+}
+@media (max-width:640px){
+  .rd-doc{padding:40px 20px 56px}
+  .rd-title{font-size:26px}
+}
+
+.rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  transition:opacity .18s ease,stroke .18s ease,stroke-width .18s ease}
+.rd-canvas svg .rd-edge-label{stroke:none}
+.rd-canvas svg .rd-node{cursor:default;
+  animation:rd-rise .52s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay:calc(var(--i,0)*55ms)}
+.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+  animation:rd-fade .6s ease backwards;animation-delay:.25s}
+@keyframes rd-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rd-fade{from{opacity:0}to{opacity:1}}
+.rd-canvas svg .rd-node:hover>.rd-shape{stroke:#bf4520;stroke-width:1.9}
+.rd-canvas svg:has(.rd-node:hover) .rd-node:not(:hover){opacity:.32}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge{opacity:.14}
+.rd-canvas svg:has(.rd-node:hover) .rd-edge-label{opacity:.16}
+.rd-canvas svg:has(.rd-edge:hover) .rd-node{opacity:.55}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge:not(:hover){opacity:.28}
+.rd-canvas svg:has(.rd-edge:hover) .rd-edge-label:not(:hover){opacity:.3}
+.rd-canvas svg .rd-edge:hover{stroke-width:2.1}
+.rd-steps li{transition:background .15s ease;border-radius:6px}
+.rd-steps li:hover{background:var(--accent-tint)}
+.rd-steps .n{transition:transform .15s ease}
+.rd-steps li:hover .n{transform:scale(1.12)}
+@media (prefers-reduced-motion:reduce){
+  .rd-canvas svg *,.rd-steps *{animation:none!important;transition:none!important}}
+@media print{
+  .rd-canvas svg .rd-node,.rd-canvas svg .rd-edge,.rd-canvas svg .rd-edge-label{
+    animation:none!important;opacity:1!important}}
+</style>
+</head>
+<body class="rd-light">
+<main class="rd-doc" data-rd-doc="1">
+  <div class="rd-eyebrow">LAYERS · 分层</div>
+  <h1 class="rd-title">这个插件的四层结构，哪一层最该先改</h1>
+  <p class="rd-takeaway">改样式只动第 1 层；要改行为必须同时动第 2、3 层，成本差一个量级。</p>
+  <figure class="rd-figure">
+    <div class="rd-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img" aria-labelledby="plugin-layers-title plugin-layers-desc" data-rd-type="layers"><title id="plugin-layers-title">这个插件的四层结构，哪一层最该先改</title><desc id="plugin-layers-desc">改样式只动第 1 层；要改行为必须同时动第 2、3 层，成本差一个量级。</desc><defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker></defs><rect width="720" height="420" fill="#f5f5f5"/><g transform="translate(130.0,40.0)"><g class="rd-node" data-node-id="layer-0" style="--i:0"><rect x="0.0" y="0.0" width="460.0" height="76.0" rx="8" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/><text x="24.0" y="42.0" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">表现层 CSS / 组件</text><text x="436.0" y="42.0" fill="#4f5d75" font-size="9" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="end" data-role="sublabel">改这里：样式、间距、主题变量</text></g><g class="rd-node" data-node-id="layer-1" style="--i:1"><rect x="0.0" y="88.0" width="460.0" height="76.0" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="24.0" y="130.0" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">技能层 Skill</text><text x="436.0" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="end" data-role="sublabel">提示词与流程，改这里影响产出</text></g><g class="rd-node" data-node-id="layer-2" style="--i:2"><rect x="0.0" y="176.0" width="460.0" height="76.0" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="24.0" y="218.0" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">插件层 Cordis</text><text x="436.0" y="218.0" fill="#4f5d75" font-size="9" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="end" data-role="sublabel">注册工具、钩子与生命周期</text></g><g class="rd-node" data-node-id="layer-3" style="--i:3"><rect x="0.0" y="264.0" width="460.0" height="76.0" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="24.0" y="306.0" fill="#2d3142" font-size="12" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="start" data-role="name" font-weight="600">宿主层 DSH</text><text x="436.0" y="306.0" fill="#4f5d75" font-size="9" font-family="'Geist', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif" text-anchor="end" data-role="sublabel">会话、文件系统、模型调用</text></g></g></svg></div>
+    <figcaption class="rd-caption">从上到下是抽象层级：越往下越接近宿主与网络。</figcaption>
+  </figure>
+  <ol class="rd-steps" data-rd-steps="3"><li><span class="n">1</span><span><span class="t">第 1 层：表现层</span><span class="d">只改样式时，动这一层就够。</span></span></li><li><span class="n">2</span><span><span class="t">第 2、3 层：技能与插件</span><span class="d">要改行为，这两层必须一起动。</span></span></li><li><span class="n">3</span><span><span class="t">第 4 层：宿主</span><span class="d">不可改，只能适配。</span></span></li></ol>
+  
+  <footer class="rd-footer"><span>LAYERS</span><span class="dot">·</span><span>fit</span><span class="dot">·</span><span>mixed</span><span class="dot">·</span><span>插件设计说明</span></footer>
+</main>
+</body>
+</html>
