@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="skills/readable-diagrams/examples/preview-architecture.png" alt="An editorial architecture diagram: a checkout request crossing a gateway into order services" width="100%">
+  <img src="assets/demo-hover.gif" alt="Hovering a node dims the rest and lights its connected edges; hovering another node moves the focus" width="100%">
 </p>
 
 <h1 align="center">readable-diagrams</h1>
@@ -42,8 +42,8 @@ the accent budget holds, contrast clears 4.5:1, and the connectors are orthogona
 - **Two gates, both must pass** — `self_check.py` (structure, accessibility,
   single-file safety) and `comprehension_check.py` (readability).
 - **Hover interaction, no JavaScript** — hovering a node dims the rest and lights
-  its edges; hovering a reading step lights its node; staggered entrance;
-  reduced-motion and print fall back to the static frame.
+  its edges (shown above); hovering a reading step lights its node; staggered
+  entrance; reduced-motion and print fall back to the static frame.
 - **Editorial skins** — light + dark, CJK-aware typography (12px floor, register
   switch for Chinese labels), 4px grid, no shadows.
 - **Import / export** — Mermaid, draw.io and Excalidraw in; SVG and PNG out.

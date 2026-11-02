@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="skills/readable-diagrams/examples/preview-architecture.png" alt="编辑风架构图：下单请求穿过网关进入订单服务" width="100%">
+  <img src="assets/demo-hover.gif" alt="悬停一个节点：其余变淡、相连的边点亮；移到另一个节点，焦点跟着走" width="100%">
 </p>
 
 <h1 align="center">readable-diagrams · 可读图表</h1>
