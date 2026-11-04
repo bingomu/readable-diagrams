@@ -14,19 +14,35 @@ How this project is published, and what is left for each channel.
 
 ## Do we need npm?
 
-No. Every channel above installs from GitHub:
+It depends on the channel — and the two answers differ:
 
-- the DSH marketplace entry points at this repo and requires `dsh.bundle`
-  (which is here), so `dsh plugin add <repo or release tarball>` works;
-- Claude Code and Codex read the tree directly.
+| Channel | Needs npm? |
+| --- | --- |
+| GitHub repo (source of truth) | no |
+| Claude Code / Codex | no — they read the tree |
+| `dsh plugin add <repo or tarball>` | no — `dsh.bundle` is in the repo |
+| **DSH in-app market (Discover / dshmarket)** | **yes** |
 
-npm would only add the shorter `dsh plugin add dsh-readable-diagrams`. If we
-decide to publish later:
+The DSH market index (`https://awesome-dsh-plugin.com/index.json`, format 1)
+only lists entries that resolve to an npm package: the list's builder reads
+`data/npm-map.json`, filled by a nightly probe that reads this repo's
+`package.json` name and then requires the npm package's `repository` field to
+point back at `bingomu/readable-diagrams`. A GitHub-only entry stays in the
+README list but is skipped by `build-index.mjs` ("no npm package").
+
+So the submission gate passing is not the end of marketplace visibility: to
+appear in DSH's own market UI, the package must be published.
+
+**To publish (once a token or `npm login` is available):**
 
 ```bash
-npm login                      # or an Automation token
-npm_config_cache=/tmp/npmcache npm publish   # name is free, dry-run already passes
+npm login                                 # or an Automation token
+npm_config_cache=/tmp/npmcache npm publish
 ```
+
+Then the nightly probe (02:23 UTC) maps it into `data/npm-map.json`, and the
+next `docs/index.json` build lists it. `npm view dsh-readable-diagrams` is the
+quick check that the publish landed.
 
 ## Publish a new version
 

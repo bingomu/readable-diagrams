@@ -113,9 +113,11 @@ regenerate, rerun. Generated HTML is never hand-patched.
 | **Codex** | Copy `skills/readable-diagrams/` to `~/.codex/skills/`, or point Codex at the repo’s `.codex-plugin/` manifest. |
 | **Any agent that reads `SKILL.md`** | `bash install.sh` (copies the skill folder to `~/.agents/skills/`). |
 
-No npm package is required — every host installs from this repo. No build step and
-no runtime dependencies either: Python 3.9+ for the scripts, Node 20+ only for the
-DSH plugin wrapper.
+Every host installs from this repo — no npm package is required. (The DSH in-app
+market index only lists npm-published plugins, so appearing inside Discover /
+dshmarket needs an npm release; direct installs work regardless.) No build step
+and no runtime dependencies either: Python 3.9+ for the scripts, Node 20+ only
+for the DSH plugin wrapper.
 
 ## Examples
 
